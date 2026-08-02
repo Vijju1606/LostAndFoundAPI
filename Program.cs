@@ -1,0 +1,88 @@
+using LostAndFoundAPI.Data;
+using Microsoft.EntityFrameworkCore;
+using LostAndFoundAPI.Repositories.Interfaces;
+using LostAndFoundAPI.Repositories.Implementations;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using LostAndFoundAPI.Services.Interfaces;
+using LostAndFoundAPI.Services.Implementations;
+using LostAndFoundAPI.Common;
+
+
+
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ILostItemRepository, LostItemRepository>();
+builder.Services.AddScoped<IFoundItemRepository, FoundItemRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMatchService,MatchService>();
+builder.Services.AddScoped<ILostItemService, LostItemService>();
+builder.Services.AddScoped<IFoundItemService,FoundItemService>();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IFileService, FileService>();
+ builder.Services.AddScoped<IEmailService,EmailService>();
+ builder.Services.AddScoped<IPasswordResetOtpRepository,PasswordResetOtpRepository>();
+ builder.Services.AddScoped<IPasswordResetOtpService,PasswordResetOtpService>();
+ builder.Services.AddScoped<IContactRequestService,ContactRequestService>();
+ builder.Services.AddScoped<IContactRequestRepository,ContactRequestRepository>();
+ builder.Services.AddScoped<IAdminRepository,AdminRepository>();
+ builder.Services.AddScoped<IAdminService,AdminService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["jwt:Issuer"],
+            ValidAudience = builder.Configuration["jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"]))
+        };
+    });
+
+    builder.Services.Configure<EmailSettings>(
+        builder.Configuration.GetSection("EmailSettings")
+    );
+
+
+
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+    });
+});
+   
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseHttpsRedirection();
+
+app.UseMiddleware<LostAndFoundAPI.Middleware.ExceptionMiddleware>();
+app.UseStaticFiles();
+app.UseCors("ReactPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();
