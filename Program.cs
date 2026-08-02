@@ -15,12 +15,18 @@ using LostAndFoundAPI.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtKey = builder.Configuration["jwt:key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    jwtKey = "dev-secret-key-change-in-production-123";
+}
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ILostItemRepository, LostItemRepository>();
 builder.Services.AddScoped<IFoundItemRepository, FoundItemRepository>();
@@ -51,7 +57,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["jwt:Issuer"],
             ValidAudience = builder.Configuration["jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 

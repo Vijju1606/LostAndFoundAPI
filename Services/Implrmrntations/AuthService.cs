@@ -36,7 +36,13 @@ namespace LostAndFoundAPI.Services.Implementations
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
+            var jwtKey = _configuration["jwt:key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+            {
+                jwtKey = "dev-secret-key-change-in-production-123";
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

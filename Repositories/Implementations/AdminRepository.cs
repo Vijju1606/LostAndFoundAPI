@@ -49,6 +49,23 @@ namespace LostAndFoundAPI.Repositories.Implementations
             return await _context.Users.FirstOrDefaultAsync(x=> x.UserId == userId);
         }
 
+        public async Task DeleteUserAsync(User user)
+        {
+            var lostItemIds = await _context.LostItems.Where(item => item.UserId == user.UserId).Select(item => item.Id).ToListAsync();
+            var foundItemIds = await _context.FoundItems.Where(item => item.UserId == user.UserId).Select(item => item.Id).ToListAsync();
+            var requests = await _context.ContactRequests.Where(request =>
+                request.RequestedByUserId == user.UserId ||
+                request.RequestedToUserId == user.UserId ||
+                (request.LostItemId.HasValue && lostItemIds.Contains(request.LostItemId.Value)) ||
+                foundItemIds.Contains(request.FoundItemId)).ToListAsync();
+
+            _context.ContactRequests.RemoveRange(requests);
+            _context.LostItems.RemoveRange(_context.LostItems.Where(item => item.UserId == user.UserId));
+            _context.FoundItems.RemoveRange(_context.FoundItems.Where(item => item.UserId == user.UserId));
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<List<UserManagementDto>> SearchUsersAsync( string keyword)
         {
             var searchKeyword =keyword.ToLower().Replace(" ","");

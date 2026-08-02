@@ -29,6 +29,18 @@ public class AdminController : ControllerBase
 
     }
 
+    [HttpDelete("users/{userId}")]
+    public async Task<IActionResult> DeleteUser(int userId)
+    {
+        var currentAdminId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await _service.DeleteUserAsync(userId, currentAdminId);
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result);
+    }
+
     [HttpPut("users/{userId}/role")]
     public async Task<IActionResult>UpdateUserRole(int userId,UpdateUsersRoleDto dto)
     {

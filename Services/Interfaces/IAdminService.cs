@@ -5,6 +5,7 @@ public interface IAdminService
 {
     Task<ApiResponse>GetDashboardAsync();
     Task<ApiResponse>GetAllUsersAsync();
+    Task<ApiResponse>DeleteUserAsync(int userId, int currentAdminId);
     Task<ApiResponse>UpdateUserRoleAsync(int userId,int currentAdminId,UpdateUsersRoleDto dto);
     Task<ApiResponse>SearchUsersAsync(string keyword);
     Task<ApiResponse> GetAllLostItemsAsync();

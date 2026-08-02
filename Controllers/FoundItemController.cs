@@ -21,7 +21,7 @@ namespace LostAndFoundAPI.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateFoundItem(CreateFoundItemDto dto)
+        public async Task<IActionResult> CreateFoundItem([FromForm] CreateFoundItemDto dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var result = await _service.CreateFoundItem(dto, userId);

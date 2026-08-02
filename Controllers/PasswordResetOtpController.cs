@@ -19,6 +19,10 @@ namespace LostAndFoundAPI.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody]ForgetPasswordDto dto)
         {
             var result= await _services.ForgetPasswordAsync(dto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
 
@@ -26,12 +30,20 @@ namespace LostAndFoundAPI.Controllers
         public async Task<IActionResult>VerifyOtp( [FromBody]VerifyOtpDto dto)
         {
             var result = await _services.VerifyOtpAsync(dto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
         [HttpPost("resetpassword")]
         public async Task<IActionResult>ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var result = await _services.ResetPasswordAsync(dto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
 

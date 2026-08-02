@@ -36,6 +36,24 @@ namespace LostAndFoundAPI.Services.Implementations
                 Data = users
             };
         }
+
+        public async Task<ApiResponse> DeleteUserAsync(int userId, int currentAdminId)
+        {
+            if (userId == currentAdminId)
+            {
+                return new ApiResponse { Success = false, Message = "You cannot remove your own account." };
+            }
+
+            var user = await _repository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return new ApiResponse { Success = false, Message = "User not found." };
+            }
+
+            await _repository.DeleteUserAsync(user);
+            return new ApiResponse { Success = true, Message = "User removed successfully." };
+        }
+
         public async Task<ApiResponse>UpdateUserRoleAsync(int userId,int currentAdminId,UpdateUsersRoleDto dto)
         {
             var user = await _repository.GetUserByIdAsync(userId);

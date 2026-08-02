@@ -22,7 +22,7 @@ namespace LostAndFoundAPI.Controllers
         
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateLostItem(CreateLostItemDto dto)
+        public async Task<IActionResult> CreateLostItem([FromForm] CreateLostItemDto dto)
         {
             
           var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -81,7 +81,7 @@ namespace LostAndFoundAPI.Controllers
             var result = await _service.GetByIdAsync(id);
             if (!result.Success)
             {
-                BadRequest(result);
+                return BadRequest(result);
             }
             return Ok(result);
         }

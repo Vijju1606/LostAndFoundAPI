@@ -4,7 +4,6 @@ using LostAndFoundAPI.DTOs;
 using LostAndFoundAPI.Models;
 using LostAndFoundAPI.Repositories.Interfaces;
 using LostAndFoundAPI.Services.Interfaces;
-using Microsoft.Identity.Client;
 
 namespace LostAndFoundAPI.Services.Implementations
 {

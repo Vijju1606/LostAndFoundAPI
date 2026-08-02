@@ -2,8 +2,6 @@ using LostAndFoundAPI.Services.Implementations;
 using LostAndFoundAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Identity.Client;
 using System.Security.Claims;
 namespace LostAndFoundAPI.Controllers
 {
@@ -34,7 +32,7 @@ namespace LostAndFoundAPI.Controllers
 
             if (!result.Success)
             {
-                BadRequest(result);
+                return BadRequest(result);
             }
             return Ok(result);
         }

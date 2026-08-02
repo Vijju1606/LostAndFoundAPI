@@ -2,8 +2,6 @@ using LostAndFoundAPI.Common;
 using LostAndFoundAPI.Models;
 using LostAndFoundAPI.Services.Interfaces;
 using LostAndFoundAPI.Repositories.Interfaces;
-using Azure;
-using System.Net.NetworkInformation;
 
 namespace LostAndFoundAPI.Services.Implementations
 {
