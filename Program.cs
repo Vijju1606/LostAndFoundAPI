@@ -71,9 +71,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactPolicy", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
+        policy
+            .WithOrigins("https://lost-and-found-client-eight.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
    
@@ -87,7 +91,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<LostAndFoundAPI.Middleware.ExceptionMiddleware>();
 app.UseStaticFiles();
-app.UseCors("ReactPolicy");
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
