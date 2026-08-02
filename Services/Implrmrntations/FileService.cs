@@ -1,17 +1,26 @@
 using LostAndFoundAPI.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.Extensions.Options;
+using LostAndFoundAPI.Common;
 
 namespace LostAndFoundAPI.Services.Implementations
 {
     public class FileService : IFileService
     {
-        private readonly IWebHostEnvironment _environment;
+        private readonly Cloudinary _cloudinary;
 
-        public FileService(IWebHostEnvironment environment)
-        {
-            _environment = environment;
-        }
+public FileService(IOptions<CloudinarySettings> settings)
+{
+    var account = new Account(
+        settings.Value.CloudName,
+        settings.Value.ApiKey,
+        settings.Value.ApiSecret);
+
+    _cloudinary = new Cloudinary(account);
+}
 
         public async Task<FileUploadResult> UploadImageAsync(IFormFile file)
         {
@@ -46,30 +55,35 @@ namespace LostAndFoundAPI.Services.Implementations
                     Message = "File size exceeds the 5MB limit."
                 };
             }
-            var originalFileName = Path.GetFileName(file.FileName);
-            var fileName = $"{Guid.NewGuid()}_{originalFileName}";
-
-           var webRoot = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(),"wwwroot");
-            var folderPath = Path.Combine(webRoot, "Images");
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-
-            var filePath = Path.Combine(folderPath, fileName);
 
             try{
 
-            using var stream = new FileStream(filePath,FileMode.Create);
-            await file.CopyToAsync(stream);
+           using var stream = file.OpenReadStream();
 
+var uploadParams = new ImageUploadParams
+{
+    File = new FileDescription(file.FileName, stream),
+    Folder = "LostAndFound"
+};
 
-            return new FileUploadResult
-            {
-                Success = true,
-                ImageUrl = $"/Images/{fileName}",
-                Message = "Image uploaded successfully."
-            };  }
+var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+if (uploadResult.Error != null)
+{
+    return new FileUploadResult
+    {
+        Success = false,
+        Message = uploadResult.Error.Message
+    };
+}
+
+return new FileUploadResult
+{
+    Success = true,
+    ImageUrl = uploadResult.SecureUrl.ToString(),
+    Message = "Image uploaded successfully."
+};
+              }
             catch (Exception ex)
             {
                 return new FileUploadResult

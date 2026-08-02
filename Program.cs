@@ -9,6 +9,8 @@ using System.Text;
 using LostAndFoundAPI.Services.Interfaces;
 using LostAndFoundAPI.Services.Implementations;
 using LostAndFoundAPI.Common;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
 
 
 
@@ -52,6 +54,7 @@ builder.Services.AddScoped<IFileService, FileService>();
  builder.Services.AddScoped<IAdminRepository,AdminRepository>();
  builder.Services.AddScoped<IAdminService,AdminService>();
 
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -70,6 +73,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     builder.Services.Configure<EmailSettings>(
         builder.Configuration.GetSection("EmailSettings")
     );
+
+    builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("Cloudinary"));
+
+builder.Services.AddSingleton(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+
+    var account = new Account(
+        settings.CloudName,
+        settings.ApiKey,
+        settings.ApiSecret);
+
+    return new Cloudinary(account);
+});
 
 
 
