@@ -56,8 +56,6 @@ namespace LostAndFoundAPI.Services.Implementations
                 ExpiryTime = now.AddMinutes(10)
             };
 
-            await _repository.UpsertOtpAsync(passwordResetOtp);
-
             try
             {
                 await _emailService.SendEmailAsync(
@@ -69,13 +67,20 @@ namespace LostAndFoundAPI.Services.Implementations
             catch (Exception ex)
             {
                 Console.WriteLine($"OTP delivery failed: {ex.Message}");
+                return new ApiResponse
+                {
+                    Success = false,
+                    Message = "We could not send the OTP email. Please try again shortly."
+                };
             }
+
+            // Store an OTP only after its email was accepted by the SMTP server.
+            await _repository.UpsertOtpAsync(passwordResetOtp);
 
             return new ApiResponse
             {
                 Success = true,
-                Message = "OTP generated successfully.",
-                Data = new { Otp = otp }
+                Message = "OTP sent to your email address."
             };
         }
 

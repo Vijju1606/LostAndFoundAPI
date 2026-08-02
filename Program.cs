@@ -18,7 +18,13 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["jwt:key"];
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    jwtKey = "dev-secret-key-change-in-production-123";
+    throw new InvalidOperationException("JWT key is not configured. Set Jwt__Key in the deployment environment.");
+}
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is not configured. Set ConnectionStrings__DefaultConnection in the deployment environment.");
 }
 
 // Add services to the container.
@@ -26,7 +32,7 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<ILostItemRepository, LostItemRepository>();
 builder.Services.AddScoped<IFoundItemRepository, FoundItemRepository>();
@@ -69,18 +75,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var isDevelopment = builder.Environment.IsDevelopment();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("https://lost-and-found-client-eight.vercel.app")
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrWhiteSpace(origin))
+                {
+                    return false;
+                }
+
+                if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                {
+                    return false;
+                }
+
+                return isDevelopment && (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase));
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
 });
-   
 
 var app = builder.Build();
 

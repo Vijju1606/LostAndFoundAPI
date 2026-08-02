@@ -25,8 +25,7 @@ namespace LostAndFoundAPI.Services.Implementations
                 || string.IsNullOrWhiteSpace(_emailSettings.Email)
                 || string.IsNullOrWhiteSpace(_emailSettings.AppPassword))
             {
-                Console.WriteLine("Email delivery is not configured. OTP will not be sent via email.");
-                return;
+                throw new InvalidOperationException("Email delivery is not configured.");
             }
 
             using var message = new MailMessage();
@@ -39,11 +38,14 @@ namespace LostAndFoundAPI.Services.Implementations
             using var client = new SmtpClient(_emailSettings.Host, _emailSettings.Port);
 
             client.Credentials = new NetworkCredential(
-                _emailSettings.Email,
-                _emailSettings.AppPassword
+                _emailSettings.Email.Trim(),
+                // Gmail displays app passwords in groups of four characters.
+                // SMTP requires the actual 16-character value without spaces.
+                _emailSettings.AppPassword.Replace(" ", string.Empty).Trim()
             );
 
             client.EnableSsl = true;
+            client.Timeout = 30000;
 
             await client.SendMailAsync(message);
         }

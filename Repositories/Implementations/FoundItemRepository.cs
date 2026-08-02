@@ -77,6 +77,10 @@ namespace LostAndFoundAPI.Repositories.Implementations
             foundItem.Description = dto.Description;
             foundItem.Location = dto.Location;
             foundItem.DateFound = dto.DateFound;
+            if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
+            {
+                foundItem.ImageUrl = dto.ImageUrl;
+            }
             _Context.SaveChanges();
             return new ApiResponse
             {

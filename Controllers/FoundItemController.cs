@@ -39,10 +39,10 @@ namespace LostAndFoundAPI.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult UpdateFoundItem(int id, CreateFoundItemDto dto)
+        public async Task<IActionResult> UpdateFoundItem(int id, [FromForm] CreateFoundItemDto dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = _service.UpdateFoundItem(id, dto, userId);
+            var result = await _service.UpdateFoundItem(id, dto, userId);
             if (!result.Success)
             {
                 return BadRequest(result);

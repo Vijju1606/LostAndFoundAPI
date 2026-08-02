@@ -1,0 +1,6 @@
+bin/
+obj/
+wwwroot/Images/
+appsettings.Development.json
+appsettings.Production.json
+.env

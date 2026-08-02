@@ -9,7 +9,7 @@ namespace LostAndFoundAPI.Services.Interfaces
     {
         Task<ApiResponse> CreateFoundItem(CreateFoundItemDto dto, int userId);
         ApiResponse GetMyFoundItems(int userId);
-        ApiResponse UpdateFoundItem(int id, CreateFoundItemDto dto, int userId);
+        Task<ApiResponse> UpdateFoundItem(int id, CreateFoundItemDto dto, int userId);
         ApiResponse DeleteFoundItem(int id, int userId);
         
         List<FoundItem> GetAllFoundItems();

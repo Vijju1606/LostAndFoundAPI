@@ -53,9 +53,20 @@ namespace LostAndFoundAPI.Services.Implementations
             return _repository.GetMyFoundItems(userId);
         }
 
-        public ApiResponse UpdateFoundItem(int id, CreateFoundItemDto dto, int userId)
+        public async Task<ApiResponse> UpdateFoundItem(int id, CreateFoundItemDto dto, int userId)
         {
-            return _repository.UpdateFoundItem(id,dto,userId);
+            if (dto.Image != null)
+            {
+                var uploadResult = await _fileService.UploadImageAsync(dto.Image);
+                if (!uploadResult.Success)
+                {
+                    return new ApiResponse { Success = false, Message = uploadResult.Message };
+                }
+
+                dto.ImageUrl = uploadResult.ImageUrl;
+            }
+
+            return _repository.UpdateFoundItem(id, dto, userId);
         }
 
         public async Task<ApiResponse>MarkAsReturnedAsync(int foundItemId, int userId)
