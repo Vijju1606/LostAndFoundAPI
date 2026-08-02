@@ -74,7 +74,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("https://lost-and-found-client-eight.vercel.app")
+            .SetIsOriginAllowed(_=> true)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
