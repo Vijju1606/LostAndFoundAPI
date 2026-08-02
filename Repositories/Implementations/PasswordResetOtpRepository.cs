@@ -26,7 +26,8 @@ namespace LostAndFoundAPI.Repositories.Implementations
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-           return await _context.Users.FirstOrDefaultAsync(x=> x.Email == email);
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            return await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == normalizedEmail);
         }
 
         public async Task UpsertOtpAsync(PasswordResetOtp otp)
